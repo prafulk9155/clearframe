@@ -1,0 +1,33 @@
+services:
+  clearframe:
+    build: .
+    image: clearframe:latest
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      MAX_IMAGE_MB: 25
+      MAX_VIDEO_MB: 300
+      MAX_VIDEO_SECONDS: 600
+      VIDEO_WORKERS: 1
+      JOB_TTL_SECONDS: 3600
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+
+  # Optional HTTPS reverse proxy. Set DOMAIN and run: docker compose --profile https up -d
+  caddy:
+    profiles: ["https"]
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    command: caddy reverse-proxy --from ${DOMAIN:-localhost} --to clearframe:8000
+    volumes:
+      - caddy_data:/data
+    depends_on: [clearframe]
+
+volumes:
+  caddy_data:

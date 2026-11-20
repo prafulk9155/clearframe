@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClearFrame — remove watermarks & objects from images and video</title>
+  <meta name="description" content="Paint over a watermark, logo or object and ClearFrame fills it in with AI inpainting. Works on images and videos." />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><span class="logo">◐</span> ClearFrame</div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-mode="image" role="tab">Image</button>
+      <button class="tab" data-mode="video" role="tab">Video</button>
+    </nav>
+    <div class="status" id="engineStatus">checking engines…</div>
+  </header>
+
+  <main class="layout">
+    <section class="stage">
+      <label class="drop" id="drop">
+        <input type="file" id="fileInput" hidden />
+        <div class="drop-inner">
+          <div class="drop-icon">⇪</div>
+          <p><strong>Drop an image</strong> or click to upload</p>
+          <p class="muted" id="dropHint">PNG, JPG, WEBP</p>
+        </div>
+      </label>
+
+      <div class="editor hidden" id="editor">
+        <div class="toolbar">
+          <div class="group">
+            <button class="tool active" data-tool="brush" title="Brush (B)">🖌 Brush</button>
+            <button class="tool" data-tool="rect" title="Rectangle (R)">▭ Box</button>
+            <button class="tool" data-tool="erase" title="Eraser (E)">⌫ Erase</button>
+          </div>
+          <label class="size">Size <input type="range" id="brushSize" min="4" max="160" value="28" /><span id="brushVal">28</span></label>
+          <div class="group">
+            <button id="autoBtn" title="Suggest a mask automatically">✨ Auto-detect</button>
+            <button id="undoBtn" title="Undo (Ctrl+Z)">↶ Undo</button>
+            <button id="clearBtn">Clear</button>
+            <button id="newBtn">New file</button>
+          </div>
+        </div>
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="view"></canvas>
+          <div class="compare hidden" id="compare">
+            <img id="beforeImg" alt="before" />
+            <div class="after" id="afterClip"><img id="afterImg" alt="after" /></div>
+            <input type="range" id="compareSlider" min="0" max="100" value="50" aria-label="Before/after" />
+            <span class="tag l">Before</span><span class="tag r">After</span>
+          </div>
+          <video id="resultVideo" class="hidden" controls playsinline></video>
+        </div>
+        <p class="muted small" id="hint">Paint over the watermark. For video, the mask applies to every frame (static overlays). Auto-detect gives a starting mask you can fix.</p>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <h2>Settings</h2>
+      <label>Engine
+        <select id="engine"></select>
+      </label>
+      <label>Refinement <span class="val" id="refineVal">0.6</span>
+        <input type="range" id="refine" min="0" max="1" step="0.05" value="0.6" />
+        <small class="muted">Seam feathering, grain & colour matching</small>
+      </label>
+      <label class="video-only hidden">Temporal smoothing <span class="val" id="temporalVal">0.6</span>
+        <input type="range" id="temporal" min="0" max="0.9" step="0.05" value="0.6" />
+        <small class="muted">Reduces flicker between frames</small>
+      </label>
+      <label>Output filter
+        <select id="preset">
+          <option value="none">None</option>
+          <option value="natural" selected>Natural (denoise + light sharpen)</option>
+          <option value="crisp">Crisp (local contrast)</option>
+          <option value="vivid">Vivid</option>
+          <option value="matte">Matte</option>
+        </select>
+      </label>
+      <label class="image-only">Format
+        <select id="fmt"><option value="png">PNG (lossless)</option><option value="jpg">JPG</option></select>
+      </label>
+
+      <button class="primary" id="runBtn" disabled>Remove watermark</button>
+      <div class="progress hidden" id="progress"><div id="bar"></div><span id="progressText"></span></div>
+      <div class="actions hidden" id="resultActions">
+        <a class="button" id="downloadBtn" download>⬇ Download</a>
+        <button id="editAgainBtn">Edit mask again</button>
+      </div>
+      <p class="error hidden" id="error"></p>
+      <p class="notice">Use only on media you own or have permission to edit. Removing a rights holder's watermark from their work can infringe copyright.</p>
+    </aside>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

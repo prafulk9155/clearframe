@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+models/*.onnx
+models/*.part
+*.mp4
+!tests/**/*.mp4
+.env
