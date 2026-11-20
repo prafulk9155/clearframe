@@ -1,6 +1,9 @@
 services:
   clearframe:
-    build: .
+    build:
+      context: .
+      args:
+        WITH_LAMA: "1"   # downloads the LaMa AI model (~208 MB, needs ~2 GB RAM)
     image: clearframe:latest
     restart: unless-stopped
     ports:

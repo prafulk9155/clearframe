@@ -1,7 +1,7 @@
 # ---- ClearFrame: watermark & object removal for images and video ----
 FROM python:3.12-slim
 
-ARG WITH_LAMA=1
+ARG WITH_LAMA=0
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     LAMA_MODEL_PATH=/app/models/lama_fp32.onnx \
     WORK_DIR=/tmp PORT=8000

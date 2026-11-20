@@ -31,7 +31,11 @@ docker compose up -d --build                         # http://SERVER:8000
 DOMAIN=erase.example.com docker compose --profile https up -d --build   # auto-HTTPS via Caddy
 ```
 
-Build without the model (smaller image, fast engine only): `docker build --build-arg WITH_LAMA=0 .`
+`docker build .` alone gives the small fast-engine image; add `--build-arg WITH_LAMA=1` for the AI model (compose does this).
+
+### Deploy free on Render
+
+`render.yaml` is a Blueprint: in Render choose **New → Blueprint**, pick this repo, deploy. The free plan (512 MB) runs the fast engine; it sleeps after ~15 min idle, so the first request takes ~1 min.
 
 ### Deploy on an Oracle Cloud Always-Free VM (Ampere ARM)
 

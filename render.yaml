@@ -1,0 +1,23 @@
+# Render Blueprint - free tier (512 MB RAM): fast engine only.
+# For the LaMa AI engine use an instance with >= 2 GB RAM and set WITH_LAMA=1.
+services:
+  - type: web
+    name: clearframe
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: WITH_LAMA
+        value: "0"
+      - key: MAX_IMAGE_MB
+        value: "15"
+      - key: MAX_IMAGE_SIDE
+        value: "4000"
+      - key: MAX_VIDEO_MB
+        value: "60"
+      - key: MAX_VIDEO_SECONDS
+        value: "90"
+      - key: ORT_THREADS
+        value: "1"
