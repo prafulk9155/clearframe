@@ -136,8 +136,28 @@ function stroke(a, b) {
   mctx.beginPath(); mctx.moveTo(a.x, a.y); mctx.lineTo(b.x, b.y); mctx.stroke();
 }
 
+$("tolerance").addEventListener("input", (e) => { $("tolVal").textContent = e.target.value; });
+
+async function pickColor(p) {
+  const c = document.createElement("canvas"); c.width = S.W; c.height = S.H;
+  const x = c.getContext("2d"); x.drawImage(S.base, 0, 0);
+  const d = x.getImageData(Math.floor(p.x), Math.floor(p.y), 1, 1).data;
+  const hex = "#" + [d[0], d[1], d[2]].map((v) => v.toString(16).padStart(2, "0")).join("");
+  $("hint").textContent = `Selecting everything close to ${hex}…`;
+  const fd = new FormData();
+  fd.append("image", await new Promise((r) => c.toBlob(r, "image/png")), "frame.png");
+  fd.append("colors", hex);
+  fd.append("tolerance", $("tolerance").value);
+  try {
+    const j = await api("/api/image/color-mask", fd).then((r) => r.json());
+    await applyMaskURL(j.mask, true);
+    $("hint").textContent = `Added ${hex} (${(j.coverage * 100).toFixed(1)}% of image). Click more colours, erase mistakes, or brush what's left.`;
+  } catch (err) { showError(err.message); }
+}
+
 view.addEventListener("pointerdown", (e) => {
   if (!S.base) return;
+  if (S.tool === "color") { pickColor(pt(e)); return; }
   view.setPointerCapture(e.pointerId);
   pushUndo();
   S.drawing = true;
@@ -178,6 +198,7 @@ window.addEventListener("keydown", (e) => {
   else if (e.key === "b") setTool("brush");
   else if (e.key === "r") setTool("rect");
   else if (e.key === "e") setTool("erase");
+  else if (e.key === "c") setTool("color");
   else if (e.key === "[") { $("brushSize").value = S.size = Math.max(4, S.size - 4); $("brushVal").textContent = S.size; }
   else if (e.key === "]") { $("brushSize").value = S.size = Math.min(160, S.size + 4); $("brushVal").textContent = S.size; }
 });
@@ -200,7 +221,7 @@ function maskBlob() {
   return new Promise((r) => c.toBlob(r, "image/png"));
 }
 
-async function applyMaskURL(url) {
+async function applyMaskURL(url, merge = false) {
   const img = await loadImage(url);
   const c = document.createElement("canvas"); c.width = S.W; c.height = S.H;
   const x = c.getContext("2d"); x.drawImage(img, 0, 0, S.W, S.H);
@@ -208,7 +229,7 @@ async function applyMaskURL(url) {
   for (let i = 0; i < id.data.length; i += 4) { const v = id.data[i]; id.data[i + 3] = v > 127 ? 255 : 0; id.data[i] = id.data[i + 1] = id.data[i + 2] = 255; }
   pushUndo();
   mctx.globalCompositeOperation = "source-over";
-  mctx.putImageData(id, 0, 0);
+  if (merge) { x.putImageData(id, 0, 0); mctx.drawImage(c, 0, 0); } else mctx.putImageData(id, 0, 0);
   render(); updateRun();
 }
 

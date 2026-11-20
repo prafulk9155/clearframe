@@ -154,3 +154,18 @@ def test_normalize_mask_rgba_variants():
     for m in (opaque, transp):
         out = normalize_mask(m, (10, 10))
         assert out.sum() == 4 * 255, out
+
+
+def test_color_mask_selects_coloured_overlay():
+    from app.colormask import color_mask
+    img = scene()
+    cv2.line(img, (50, 50), (500, 300), (60, 150, 250), 8)  # orange stroke (BGR)
+    truth = np.zeros(img.shape[:2], np.uint8)
+    cv2.line(truth, (50, 50), (500, 300), 255, 8)
+    m = color_mask(img, [(250, 150, 60)], 30, 2)
+    assert ((m > 0) & (truth > 0)).sum() / (truth > 0).sum() > 0.95
+    assert (m > 0).mean() < 0.08
+    r = client.post("/api/image/color-mask",
+                    files={"image": ("a.png", cv2.imencode(".png", img)[1].tobytes())},
+                    data={"colors": "#fa963c", "tolerance": "30"})
+    assert r.status_code == 200 and r.json()["coverage"] > 0

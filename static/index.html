@@ -34,8 +34,10 @@
             <button class="tool active" data-tool="brush" title="Brush (B)">🖌 Brush</button>
             <button class="tool" data-tool="rect" title="Rectangle (R)">▭ Box</button>
             <button class="tool" data-tool="erase" title="Eraser (E)">⌫ Erase</button>
+            <button class="tool" data-tool="color" title="Click a colour to select every pixel like it (C)">🎯 Colour</button>
           </div>
           <label class="size">Size <input type="range" id="brushSize" min="4" max="160" value="28" /><span id="brushVal">28</span></label>
+          <label class="size">Tolerance <input type="range" id="tolerance" min="10" max="60" value="30" /><span id="tolVal">30</span></label>
           <div class="group">
             <button id="autoBtn" title="Suggest a mask automatically">✨ Auto-detect</button>
             <button id="undoBtn" title="Undo (Ctrl+Z)">↶ Undo</button>

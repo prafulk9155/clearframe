@@ -4,11 +4,12 @@ Remove watermarks, logos, timestamps and unwanted objects from **images and vide
 Paint over the mark (or let auto-detect find it), pick an engine, and download a refined, filtered result.
 
 - **Two engines** — `fast` (OpenCV Telea, no model) and `lama` (LaMa AI inpainting via ONNX Runtime, CPU or GPU)
+- **Colour select** — click a colour (annotation pen, glow doodle, coloured logo) and every similar pixel is masked, glow halo included
 - **Auto-detect** — multi-frame consistency for static video overlays; top-hat morphology inside a box for images
 - **Refinement** — feathered seams, grain re-synthesis, LAB colour matching, edge-preserving cleanup
 - **Output filters** — Natural / Crisp / Vivid / Matte
 - **Video** — background jobs with progress, adaptive temporal smoothing (anti-flicker), audio kept, H.264 + faststart
-- **Before/after slider**, undo, brush/box/eraser, keyboard shortcuts (`B` `R` `E` `[` `]` `Ctrl+Z`), paste from clipboard
+- **Before/after slider**, undo, brush/box/eraser, keyboard shortcuts (`B` `R` `E` `C` `[` `]` `Ctrl+Z`), paste from clipboard
 
 How it works and why each piece was chosen: [docs/RESEARCH.md](docs/RESEARCH.md).
 
@@ -57,6 +58,7 @@ If you front it with your own nginx instead, set `client_max_body_size 300m;` an
 |---|---|---|---|
 | GET | `/api/health` | – | engines, presets, limits |
 | POST | `/api/image/inpaint` | `image`, `mask` (PNG, white = remove), `engine`, `refine_strength` 0–1, `preset`, `fmt` png\|jpg | image bytes |
+| POST | `/api/image/color-mask` | `image`, `colors` (#rrggbb,…), `tolerance`, `grow` | `{mask: dataURL}` |
 | POST | `/api/image/detect` | `image`, optional ROI `x y w h` | `{mask: dataURL}` |
 | POST | `/api/video/detect` | `video` | `{mask: dataURL \| null}` |
 | POST | `/api/video/inpaint` | `video`, `mask`, `engine`, `refine_strength`, `preset`, `temporal` 0–0.9 | `{job_id}` |

@@ -19,6 +19,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
+from .colormask import color_mask
 from .detect import detect_image_mask, detect_video_mask
 from .engines import EngineRegistry, normalize_mask
 from .refine import PRESETS, apply_preset, refine
@@ -134,6 +135,22 @@ VIDEO_EXTS = {".mp4", ".mov", ".webm", ".mkv", ".avi", ".m4v"}
 def _video_suffix(name: str | None) -> str:
     suffix = Path(name or "").suffix.lower()
     return suffix if suffix in VIDEO_EXTS else ".mp4"
+
+
+@app.post("/api/image/color-mask")
+async def image_color_mask(image: UploadFile = File(...), colors: str = Form(...),
+                           tolerance: float = Form(30), grow: int = Form(4)):
+    """colors: '#rrggbb,#rrggbb' picked by the user; returns a mask of all similar pixels."""
+    img = _decode(await _read_limited(image, MAX_IMAGE_MB))
+    try:
+        rgb = [tuple(int(c.strip().lstrip("#")[i:i + 2], 16) for i in (0, 2, 4))
+               for c in colors.split(",") if c.strip()][:8]
+    except ValueError:
+        raise HTTPException(400, "colors must be like #ff8800,#ffffff")
+    if not rgb:
+        raise HTTPException(400, "Pick at least one colour")
+    mask = color_mask(img, rgb, float(min(max(tolerance, 5), 80)), int(min(max(grow, 0), 20)))
+    return {"mask": _png_data_url(mask), "coverage": float((mask > 0).mean())}
 
 
 def _save_upload(data: bytes, suffix: str) -> tuple[str, Path]:
